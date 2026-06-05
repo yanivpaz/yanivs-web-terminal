@@ -3,52 +3,8 @@
   const repo = {
     owner: "yanivpaz",
     name: "yanivs-web-terminal",
-    branch: "main",
     linksPath: "LINKS.MD",
   };
-  const tokenKey = "yanivs-web-terminal.github-token";
-
-  function getStoredToken() {
-    try {
-      return sessionStorage.getItem(tokenKey) || "";
-    } catch (_error) {
-      return "";
-    }
-  }
-
-  function setStoredToken(token) {
-    try {
-      sessionStorage.setItem(tokenKey, token);
-    } catch (_error) {
-      throw new Error("could not store token in this browser session");
-    }
-  }
-
-  function clearStoredToken() {
-    try {
-      sessionStorage.removeItem(tokenKey);
-    } catch (_error) {
-      // Ignore storage errors while clearing.
-    }
-  }
-
-  function requestToken(term) {
-    const existing = getStoredToken();
-    if (existing) {
-      return existing;
-    }
-
-    const token = window.prompt(
-      "Paste a GitHub token with Contents: Read and write permission for yanivpaz/yanivs-web-terminal."
-    );
-    if (!token) {
-      term.write("cancelled: /addlink needs a GitHub token to commit LINKS.MD", "warn");
-      return "";
-    }
-    setStoredToken(token.trim());
-    term.write("token stored for this browser tab", "muted");
-    return token.trim();
-  }
 
   function normalizeUrl(value) {
     const candidate = /^[a-z][a-z\d+.-]*:\/\//i.test(value) ? value : `https://${value}`;
@@ -59,96 +15,48 @@
     return url;
   }
 
-  function markdownLabel(value) {
-    return value
-      .trim()
-      .replace(/\s+/g, " ")
-      .replaceAll("\\", "\\\\")
-      .replaceAll("[", "\\[")
-      .replaceAll("]", "\\]")
-      .replaceAll("`", "\\`");
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
-  function encodeBase64(text) {
-    const bytes = new TextEncoder().encode(text);
-    let binary = "";
-    for (const byte of bytes) {
-      binary += String.fromCharCode(byte);
-    }
-    return btoa(binary);
+  function truncate(value, length) {
+    const text = value.trim().replace(/\s+/g, " ");
+    return text.length > length ? `${text.slice(0, length - 3)}...` : text;
   }
 
-  function decodeBase64(value) {
-    const binary = atob(value.replace(/\s/g, ""));
-    const bytes = new Uint8Array(binary.length);
-    for (let index = 0; index < binary.length; index += 1) {
-      bytes[index] = binary.charCodeAt(index);
-    }
-    return new TextDecoder().decode(bytes);
-  }
-
-  async function githubRequest(path, token, options = {}) {
-    const response = await fetch(`https://api.github.com/${path}`, {
-      ...options,
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "X-GitHub-Api-Version": "2022-11-28",
-        ...(options.headers || {}),
-      },
-    });
-
-    const text = await response.text();
-    const data = text ? JSON.parse(text) : {};
-    if (!response.ok) {
-      const message = data.message || `GitHub API returned ${response.status}`;
-      throw new Error(`${message} (${response.status})`);
-    }
-    return data;
-  }
-
-  function emptyLinksDocument() {
-    return "# Links\n\nLinks saved through Yaniv's web terminal.\n\n## Saved Links\n\n";
-  }
-
-  async function fetchLinksFile(token) {
-    const path = `repos/${repo.owner}/${repo.name}/contents/${repo.linksPath}?ref=${repo.branch}`;
-    try {
-      const file = await githubRequest(path, token);
-      return {
-        content: decodeBase64(file.content || ""),
-        sha: file.sha,
-      };
-    } catch (error) {
-      if (String(error.message).includes("(404)")) {
-        return { content: emptyLinksDocument(), sha: null };
-      }
-      throw error;
-    }
-  }
-
-  async function commitLinksFile(token, content, sha, message) {
-    const path = `repos/${repo.owner}/${repo.name}/contents/${repo.linksPath}`;
-    const body = {
-      branch: repo.branch,
-      content: encodeBase64(content),
-      message,
+  function buildAddLinkIssueUrl(url, title) {
+    const label = title || url.hostname || url.href;
+    const payload = {
+      source: "yanivs-web-terminal",
+      type: "addlink",
+      version: 1,
+      url: url.href,
+      title: label,
+      createdAt: new Date().toISOString(),
     };
-    if (sha) {
-      body.sha = sha;
-    }
-    return githubRequest(path, token, {
-      body: JSON.stringify(body),
-      method: "PUT",
-    });
-  }
-
-  function appendLink(content, url, title) {
-    const date = new Date().toISOString().slice(0, 10);
-    const label = markdownLabel(title || url.hostname || url.href);
-    const entry = `- ${date}: [${label}](${url.href})`;
-    return `${(content || emptyLinksDocument()).trimEnd()}\n${entry}\n`;
+    const body = [
+      "<!-- yanivs-web-terminal:addlink:v1",
+      JSON.stringify(payload),
+      "-->",
+      "",
+      "This issue asks the repository workflow to append a link to LINKS.MD.",
+      "",
+      `URL: ${url.href}`,
+      `Title: ${label}`,
+      "",
+      "Authentication is handled by GitHub: the workflow only commits links from users",
+      "who already have write, maintain, or admin permission on this repository.",
+    ].join("\n");
+    const issueUrl = new URL(`https://github.com/${repo.owner}/${repo.name}/issues/new`);
+    issueUrl.searchParams.set("title", truncate(`Add link: ${label}`, 120));
+    issueUrl.searchParams.set("body", body);
+    issueUrl.searchParams.set("labels", "add-link");
+    return issueUrl;
   }
 
   terminal.registerCommand("help", {
@@ -205,66 +113,34 @@
     },
   });
 
-  terminal.registerCommand("token", {
-    summary: "set/clear GitHub write token",
-    sensitive: true,
-    run(term) {
-      const action = (term.args[0] || "").toLowerCase();
-      if (action === "clear") {
-        clearStoredToken();
-        term.write("token cleared", "muted");
-        return;
-      }
-      if (action === "status") {
-        term.write(getStoredToken() ? "token is set for this tab" : "token is not set", "muted");
-        return;
-      }
-
-      const token = term.args.length
-        ? term.args.join(" ").trim()
-        : window.prompt(
-            "Paste a GitHub token with Contents: Read and write permission for yanivpaz/yanivs-web-terminal."
-          );
-      if (!token) {
-        term.write("token unchanged", "warn");
-        return;
-      }
-      setStoredToken(token.trim());
-      term.write("token stored for this browser tab", "muted");
-    },
-  });
-
   terminal.registerCommand("addlink", {
-    summary: "append a link to LINKS.MD",
+    summary: "open an authenticated link request",
     aliases: ["link"],
-    async run(term) {
+    run(term) {
       if (!term.args.length) {
         term.write("usage: /addlink https://example.com optional title", "warn");
         return;
       }
 
-      const token = requestToken(term);
-      if (!token) {
-        return;
-      }
-
       const url = normalizeUrl(term.args[0]);
       const title = term.args.slice(1).join(" ").trim();
-      term.write(`saving ${url.href} to ${repo.linksPath}...`, "muted");
+      const issueUrl = buildAddLinkIssueUrl(url, title);
+      const opened = window.open(issueUrl.href, "_blank", "noopener,noreferrer");
 
-      const file = await fetchLinksFile(token);
-      const nextContent = appendLink(file.content, url, title);
-      const result = await commitLinksFile(
-        token,
-        nextContent,
-        file.sha,
-        `Add link: ${title || url.hostname}`
-      );
-
-      const commitUrl = result.commit?.html_url || "";
       term.writeHtml(
-        `<span class="ok">saved:</span> ${url.href}` +
-          (commitUrl ? ` <span class="muted">${commitUrl}</span>` : "")
+        '<span class="ok">auth handoff:</span> GitHub issue opened. ' +
+          "Submit it while logged in as a repository writer, and the workflow will commit " +
+          `${repo.linksPath}.`
+      );
+      if (!opened) {
+        term.writeHtml(
+          `<span class="warn">popup blocked:</span> ` +
+            `<a href="${issueUrl.href}" target="_blank" rel="noopener noreferrer">open the link request</a>`
+        );
+      }
+      term.writeHtml(
+        `<span class="muted">request:</span> ${escapeHtml(url.href)} ` +
+          `${title ? escapeHtml(`(${title})`) : ""}`
       );
     },
   });

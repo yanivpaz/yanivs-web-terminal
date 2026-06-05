@@ -25,25 +25,16 @@ terminal.registerCommand("status", {
 
 ## Save Links From The Terminal
 
-The site includes `/addlink`, which appends to `LINKS.MD` by committing through the
-GitHub Contents API:
+The site includes `/addlink`, which opens a prefilled GitHub issue:
 
 ```text
 /addlink https://example.com Optional link title
 ```
 
-Because GitHub Pages is static, browser code cannot write to the repository unless
-you authenticate. Run `/token` and paste a GitHub fine-grained token that has
-`Contents: Read and write` access to `yanivpaz/yanivs-web-terminal`. The token is
-stored only in this browser tab with `sessionStorage`.
-
-Useful token commands:
-
-```text
-/token
-/token status
-/token clear
-```
+GitHub handles the browser-side authentication. When the issue is submitted, the
+`Persist Add Link Requests` workflow checks the issue author's repository permission.
+Only users with `write`, `maintain`, or `admin` access can cause the workflow to append
+the link to `LINKS.MD` and commit it. Unauthorized requests are closed without a commit.
 
 ## Deploy
 

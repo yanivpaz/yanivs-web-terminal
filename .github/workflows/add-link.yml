@@ -1,0 +1,141 @@
+name: Persist Add Link Requests
+
+on:
+  issues:
+    types:
+      - opened
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  persist:
+    if: startsWith(github.event.issue.title, 'Add link:')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check requester permission
+        id: auth
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          REQUESTER: ${{ github.event.issue.user.login }}
+        run: |
+          permission="$(gh api "repos/$REPO/collaborators/$REQUESTER/permission" --jq .permission 2>/dev/null || echo none)"
+          echo "permission=$permission" >> "$GITHUB_OUTPUT"
+          case "$permission" in
+            admin|maintain|write)
+              echo "allowed=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "allowed=false" >> "$GITHUB_OUTPUT"
+              gh issue comment "$ISSUE_NUMBER" \
+                --repo "$REPO" \
+                --body "This link request was not applied. Only users with write, maintain, or admin permission on this repository can persist links."
+              gh issue close "$ISSUE_NUMBER" \
+                --repo "$REPO" \
+                --reason "not planned"
+              ;;
+          esac
+
+      - name: Checkout
+        if: steps.auth.outputs.allowed == 'true'
+        uses: actions/checkout@v6
+
+      - name: Append link
+        if: steps.auth.outputs.allowed == 'true'
+        id: append
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          import re
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from urllib.parse import urlparse
+
+          event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+          issue = event["issue"]
+          body = issue.get("body") or ""
+          match = re.search(
+              r"<!--\s*yanivs-web-terminal:addlink:v1\s*(\{.*?\})\s*-->",
+              body,
+              re.DOTALL,
+          )
+          if not match:
+              raise SystemExit("missing addlink payload")
+
+          payload = json.loads(match.group(1))
+          url = str(payload.get("url") or "").strip()
+          parsed = urlparse(url)
+          if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+              raise SystemExit(f"invalid URL: {url}")
+
+          def normalize_label(value):
+              text = re.sub(r"\s+", " ", str(value or "").strip())
+              text = text.replace("\\", "\\\\")
+              text = text.replace("[", "\\[")
+              text = text.replace("]", "\\]")
+              text = text.replace("`", "\\`")
+              return text or parsed.netloc
+
+          title = normalize_label(payload.get("title") or parsed.netloc)
+          date = datetime.now(timezone.utc).date().isoformat()
+          path = Path("LINKS.MD")
+          if path.exists():
+              content = path.read_text()
+          else:
+              content = "# Links\n\nLinks saved through Yaniv's web terminal.\n\n## Saved Links\n\n"
+
+          duplicate = f"]({url})" in content
+          if duplicate:
+              changed = "false"
+          else:
+              content = content.rstrip() + f"\n- {date}: [{title}]({url})\n"
+              path.write_text(content)
+              changed = "true"
+
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a") as output:
+              output.write(f"changed={changed}\n")
+              output.write(f"url={url}\n")
+              output.write(f"title={title}\n")
+          PY
+
+      - name: Commit link
+        if: steps.auth.outputs.allowed == 'true' && steps.append.outputs.changed == 'true'
+        id: commit
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add LINKS.MD
+          git commit -m "Add link from issue #$ISSUE_NUMBER"
+          git push
+          sha="$(git rev-parse HEAD)"
+          echo "url=https://github.com/$GITHUB_REPOSITORY/commit/$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Close request
+        if: steps.auth.outputs.allowed == 'true'
+        env:
+          COMMIT_URL: ${{ steps.commit.outputs.url }}
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          TITLE: ${{ steps.append.outputs.title }}
+          URL: ${{ steps.append.outputs.url }}
+          WAS_CHANGED: ${{ steps.append.outputs.changed }}
+        run: |
+          if [ "$WAS_CHANGED" = "true" ]; then
+            body="Added [$TITLE]($URL) to LINKS.MD."
+            if [ -n "$COMMIT_URL" ]; then
+              body="$body"$'\n\n'"Commit: $COMMIT_URL"
+            fi
+          else
+            body="That link already exists in LINKS.MD, so no new commit was created."
+          fi
+          gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "$body"
+          gh issue close "$ISSUE_NUMBER" --repo "$REPO" --reason completed
