@@ -1,0 +1,336 @@
+:root {
+  color-scheme: dark;
+  --page: #040606;
+  --terminal: #06100a;
+  --terminal-2: #020704;
+  --green: #24ff42;
+  --green-soft: #5cff70;
+  --green-dim: #119327;
+  --amber: #ffbc42;
+  --cyan: #5cd7ff;
+  --text: #d7ded9;
+  --muted: #6d7b72;
+  --danger: #ff5f6d;
+  --edge: rgba(36, 255, 66, 0.35);
+  --shadow: rgba(36, 255, 66, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 20% 12%, rgba(36, 255, 66, 0.08), transparent 28rem),
+    linear-gradient(180deg, #070a08 0%, var(--page) 45%, #000 100%);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+body.high-contrast {
+  --terminal: #000;
+  --terminal-2: #000;
+  --green: #72ff7c;
+  --green-soft: #b6ffbc;
+  --text: #fff;
+  --muted: #9daaa1;
+  --edge: rgba(114, 255, 124, 0.46);
+  --shadow: rgba(114, 255, 124, 0.24);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.terminal-shell {
+  min-height: 100vh;
+  padding: 0;
+}
+
+.terminal-screen {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(36, 255, 66, 0.03) 50%, rgba(0, 0, 0, 0.08) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.025), rgba(0, 255, 0, 0.012), rgba(0, 0, 255, 0.025)),
+    var(--terminal);
+  background-size: 100% 4px, 6px 100%, 100% 100%;
+  border-top: 1px solid rgba(36, 255, 66, 0.12);
+  box-shadow: inset 0 0 7rem rgba(0, 0, 0, 0.78);
+}
+
+.terminal-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at center, transparent 0, transparent 52%, rgba(0, 0, 0, 0.42) 100%),
+    repeating-linear-gradient(0deg, transparent 0 2px, rgba(36, 255, 66, 0.035) 2px 3px);
+  mix-blend-mode: screen;
+  opacity: 0.68;
+}
+
+.terminal-noise {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    radial-gradient(rgba(36, 255, 66, 0.05) 1px, transparent 1px);
+  background-position: 0 0, 7px 11px;
+  background-size: 19px 23px, 31px 29px;
+  opacity: 0.16;
+  animation: drift 16s steps(8) infinite;
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(2rem, -1.5rem, 0);
+  }
+}
+
+.terminal-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100vh;
+  width: min(100%, 1120px);
+  flex-direction: column;
+  padding: 3rem 1.1rem 1rem;
+}
+
+.boot-header {
+  width: 100%;
+}
+
+.ascii-logo {
+  margin: 0 0 1.7rem;
+  overflow-x: auto;
+  color: var(--green);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.08;
+  text-shadow:
+    0 0 0.45rem var(--shadow),
+    0.16rem 0.16rem 0 rgba(36, 255, 66, 0.28);
+}
+
+.boot-lines,
+.terminal-output {
+  display: grid;
+  gap: 0.22rem;
+}
+
+.boot-line,
+.output-row {
+  min-height: 1.45em;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ok,
+.ready,
+.accent {
+  color: var(--green);
+  text-shadow: 0 0 0.42rem var(--shadow);
+}
+
+.warn {
+  color: var(--amber);
+}
+
+.info {
+  color: var(--cyan);
+}
+
+.error {
+  color: var(--danger);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.intro {
+  margin: 2.2rem 0 1.7rem;
+  max-width: 55rem;
+  color: var(--text);
+  text-shadow: 0 0 0.3rem rgba(255, 255, 255, 0.1);
+}
+
+.intro p {
+  margin: 0.1rem 0;
+}
+
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin: auto 0 1.45rem;
+  padding-top: 6rem;
+}
+
+.terminal-button {
+  min-height: 2.2rem;
+  border: 1px solid var(--green-dim);
+  border-radius: 4px;
+  background: rgba(1, 11, 5, 0.72);
+  color: var(--text);
+  cursor: pointer;
+  padding: 0.42rem 0.84rem;
+  text-align: left;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.terminal-button:hover,
+.terminal-button:focus-visible {
+  border-color: var(--green);
+  background: rgba(18, 51, 24, 0.88);
+  color: #fff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(36, 255, 66, 0.12);
+}
+
+.terminal-output {
+  margin: 0 0 0.85rem;
+}
+
+.output-command {
+  color: var(--green-soft);
+}
+
+.prompt-line {
+  display: grid;
+  grid-template-columns: auto 0.7rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.prompt-label {
+  color: var(--green);
+  font-weight: 800;
+  text-shadow: 0 0 0.42rem var(--shadow);
+  white-space: nowrap;
+}
+
+.cursor-block {
+  display: inline-block;
+  width: 0.68rem;
+  height: 1.08rem;
+  background: var(--green);
+  box-shadow: 0 0 0.45rem var(--shadow);
+  animation: blink 900ms steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.terminal-input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  caret-color: var(--green);
+  min-width: 0;
+}
+
+.terminal-input::placeholder {
+  color: rgba(215, 222, 217, 0.28);
+  font-style: italic;
+}
+
+.terminal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.45rem;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.terminal-footer span:not(:last-child)::after {
+  content: " ·";
+  color: var(--amber);
+  margin-left: 0.6rem;
+}
+
+::selection {
+  background: rgba(36, 255, 66, 0.28);
+  color: #fff;
+}
+
+@media (min-width: 780px) {
+  .terminal-content {
+    padding: 3.4rem 1.6rem 1.2rem;
+  }
+
+  .ascii-logo {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 620px) {
+  body {
+    font-size: 14px;
+  }
+
+  .terminal-content {
+    padding-top: 2rem;
+  }
+
+  .ascii-logo {
+    font-size: 12px;
+  }
+
+  .quick-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding-top: 3rem;
+  }
+
+  .terminal-button {
+    width: 100%;
+  }
+
+  .prompt-line {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+
+  .cursor-block {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

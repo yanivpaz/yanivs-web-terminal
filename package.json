@@ -1,0 +1,9 @@
+{
+  "name": "yanivs-web-terminal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A command-driven personal website for GitHub Pages.",
+  "scripts": {
+    "start": "python3 -m http.server 4173"
+  }
+}

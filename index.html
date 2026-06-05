@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Yaniv's web terminal: a command-driven personal site ready for GitHub Pages."
+    />
+    <meta name="theme-color" content="#021007" />
+    <title>Yaniv's Web Terminal</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="terminal-shell" aria-label="Yaniv's web terminal">
+      <section class="terminal-screen" id="terminalScreen">
+        <div class="terminal-noise" aria-hidden="true"></div>
+        <div class="terminal-content">
+          <header class="boot-header" aria-label="terminal boot output">
+            <pre class="ascii-logo" aria-label="Yaniv logo">__   __    _    _   _ ___     __
+\ \ / /   / \  | \ | |_ _\ \   / /
+ \ V /   / _ \ |  \| || | \ \ / / 
+  | |   / ___ \| |\  || |  \ V /  
+  |_|  /_/   \_\_| \_|___|  |_|</pre>
+            <div class="boot-lines" id="bootLines"></div>
+          </header>
+
+          <section class="intro" aria-label="intro">
+            <p>Welcome to yanivpaz.github.io. I am Yaniv's web terminal.</p>
+            <p>Run a command, open a shortcut, or leave this shell ready for the next module.</p>
+          </section>
+
+          <section class="quick-actions" aria-label="quick commands">
+            <button class="terminal-button" type="button" data-command="/about">
+              [ Who is Yaniv? ]
+            </button>
+            <button class="terminal-button" type="button" data-command="/cv">
+              [ Show the CV ]
+            </button>
+            <button class="terminal-button" type="button" data-command="/projects">
+              [ What is he building? ]
+            </button>
+            <button class="terminal-button" type="button" data-command="/contact">
+              [ Contact ]
+            </button>
+          </section>
+
+          <section class="terminal-output" id="terminalOutput" aria-live="polite"></section>
+
+          <form class="prompt-line" id="terminalForm" autocomplete="off">
+            <label class="prompt-label" for="terminalInput">yaniv@web:~$</label>
+            <span class="cursor-block" aria-hidden="true"></span>
+            <input
+              id="terminalInput"
+              class="terminal-input"
+              name="command"
+              spellcheck="false"
+              inputmode="text"
+              placeholder="ask anything, or type / for commands..."
+              aria-label="Terminal command"
+            />
+          </form>
+
+          <footer class="terminal-footer" aria-label="terminal status">
+            <span>/ commands</span>
+            <span>enter run</span>
+            <span>tab complete</span>
+          </footer>
+        </div>
+      </section>
+    </main>
+
+    <script src="terminal.js"></script>
+    <script src="commands.js"></script>
+  </body>
+</html>
