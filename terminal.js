@@ -93,12 +93,14 @@
     commandRegistry.set(normalizeCommandName(name), {
       summary: config.summary || "",
       aliases: config.aliases || [],
+      sensitive: Boolean(config.sensitive),
       run: config.run,
     });
     for (const alias of config.aliases || []) {
       commandRegistry.set(normalizeCommandName(alias), {
         summary: config.summary || "",
         aliasFor: normalizeCommandName(name),
+        sensitive: Boolean(config.sensitive),
         run: config.run,
       });
     }
@@ -146,8 +148,9 @@
       return;
     }
 
-    line(`<span class="output-command">yaniv@web:~$ ${escapeHtml(raw)}</span>`);
     const command = commandRegistry.get(parsed.command);
+    const visibleCommand = command?.sensitive ? `/${parsed.command} [redacted]` : raw;
+    line(`<span class="output-command">yaniv@web:~$ ${escapeHtml(visibleCommand)}</span>`);
     if (!command) {
       line(
         `<span class="error">command not found:</span> ${escapeHtml(parsed.command)} ` +
@@ -187,10 +190,14 @@
     if (!raw) {
       return;
     }
-    history.push(raw);
-    history = history.slice(-60);
+    const parsed = parseCommand(raw);
+    const command = commandRegistry.get(parsed.command);
+    if (!command?.sensitive) {
+      history.push(raw);
+      history = history.slice(-60);
+      saveHistory();
+    }
     historyIndex = history.length;
-    saveHistory();
     runRawCommand(raw);
   }
 
