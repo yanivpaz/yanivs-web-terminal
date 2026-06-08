@@ -5,35 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Yaniv's web terminal: a command-driven personal site ready for GitHub Pages."
+      content="Yaniv Paz's web terminal: a command-driven personal site ready for GitHub Pages."
     />
     <meta name="theme-color" content="#021007" />
-    <title>Yaniv's Web Terminal</title>
+    <title>Yaniv Paz's Web Terminal</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="terminal-shell" aria-label="Yaniv's web terminal">
+    <main class="terminal-shell" aria-label="Yaniv Paz's web terminal">
       <section class="terminal-screen" id="terminalScreen">
         <div class="terminal-noise" aria-hidden="true"></div>
         <div class="terminal-content">
           <header class="boot-header" aria-label="terminal boot output">
-            <pre class="ascii-logo" aria-label="Yaniv logo">__   __    _    _   _ ___     __
-\ \ / /   / \  | \ | |_ _\ \   / /
- \ V /   / _ \ |  \| || | \ \ / / 
-  | |   / ___ \| |\  || |  \ V /  
-  |_|  /_/   \_\_| \_|___|  |_|</pre>
+            <pre class="ascii-logo" aria-label="Yaniv Paz logo">__   __    _    _   _ ___     __   ____   _    ____
+\ \ / /   / \  | \ | |_ _\ \   / / |  _ \ / \  |__  /
+ \ V /   / _ \ |  \| || | \ \ / /  | |_) / _ \   / /
+  | |   / ___ \| |\  || |  \ V /   |  __/ ___ \ / /_
+  |_|  /_/   \_\_| \_|___|  |_|    |_| /_/   \_/____|</pre>
             <div class="boot-lines" id="bootLines"></div>
           </header>
 
           <section class="intro" aria-label="intro">
-            <p>Welcome to yanivpaz.github.io. I am Yaniv's web terminal.</p>
+            <p>Welcome to yanivpaz.com. I am Yaniv Paz's web terminal.</p>
             <p>Run a command, open a shortcut, or leave this shell ready for the next module.</p>
           </section>
 
           <section class="quick-actions" aria-label="quick commands">
             <button class="terminal-button" type="button" data-command="/about">
-              [ Who is Yaniv? ]
+              [ Who is Yaniv Paz? ]
             </button>
             <button class="terminal-button" type="button" data-command="/cv">
               [ Show the CV ]
@@ -52,7 +52,7 @@
           <section class="terminal-output" id="terminalOutput" aria-live="polite"></section>
 
           <form class="prompt-line" id="terminalForm" autocomplete="off">
-            <label class="prompt-label" for="terminalInput">yaniv@web:~$</label>
+            <label class="prompt-label" for="terminalInput">yanivpaz@web:~$</label>
             <span class="cursor-block" aria-hidden="true"></span>
             <input
               id="terminalInput"
@@ -74,7 +74,7 @@
       </section>
     </main>
 
-    <script src="terminal.js?v=20260605-auth-issue"></script>
-    <script src="commands.js?v=20260605-auth-issue"></script>
+    <script src="terminal.js?v=20260608-yaniv-paz"></script>
+    <script src="commands.js?v=20260608-yaniv-paz"></script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-# Yaniv's Web Terminal
+# Yaniv Paz's Web Terminal
 
 A static, command-driven personal site ready for GitHub Pages.
 

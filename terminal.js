@@ -150,7 +150,7 @@
 
     const command = commandRegistry.get(parsed.command);
     const visibleCommand = command?.sensitive ? `/${parsed.command} [redacted]` : raw;
-    line(`<span class="output-command">yaniv@web:~$ ${escapeHtml(visibleCommand)}</span>`);
+    line(`<span class="output-command">yanivpaz@web:~$ ${escapeHtml(visibleCommand)}</span>`);
     if (!command) {
       line(
         `<span class="error">command not found:</span> ${escapeHtml(parsed.command)} ` +
@@ -220,7 +220,7 @@
 
   function boot() {
     const { date, time, zone } = nowParts();
-    bootLine(`<span class="accent">yaniv terminal kernel f:v1.0.0 b:v0.1.0 [${date}]</span>`);
+    bootLine(`<span class="accent">yaniv paz terminal kernel f:v1.0.0 b:v0.1.0 [${date}]</span>`);
     bootLine(`<span class="accent">Local time: ${time} (${escapeHtml(zone)})</span>`);
     bootLine("");
     bootLine(`<span class="ok">[ OK ]</span> Detected visitor: ${escapeHtml(getPlatform())}`);
@@ -230,7 +230,7 @@
     bootLine('<span class="ok">[ OK ]</span> Loading resources: commands, shortcuts, profile');
     bootLine('<span class="ok">[ OK ]</span> Starting shell service...');
     bootLine("");
-    bootLine(`<span class="ready">[${time}] yaniv@web -- ready.</span>`);
+    bootLine(`<span class="ready">[${time}] yanivpaz@web -- ready.</span>`);
   }
 
   form.addEventListener("submit", (event) => {
