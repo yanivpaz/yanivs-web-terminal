@@ -94,12 +94,15 @@
     summary: "show current work",
     aliases: ["work"],
     run(term) {
-      term.printBlock([
-        "projects:",
-        "  ghidra-rpc            reverse-engineering automation over a local RPC daemon",
-        "  web-terminal          this GitHub Pages command surface",
-        "  add-more-here         edit commands.js when the next project is ready",
-      ]);
+      term.writeHtml('<span class="accent">projects:</span>');
+      term.writeHtml(
+        '  <a href="https://github.com/yanivpaz/teams-dashboard" target="_blank" rel="noopener noreferrer">teams-dashboard</a> ' +
+          '<span class="muted">IDP-like tool</span>'
+      );
+      term.writeHtml(
+        '  <a href="https://github.com/yanivpaz/mp3-downloader" target="_blank" rel="noopener noreferrer">mp3-downloader</a> ' +
+          '<span class="muted">MP3 downloader</span>'
+      );
     },
   });
 
